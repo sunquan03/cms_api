@@ -4,21 +4,32 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/joho/godotenv"
 	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
-type ElsaticLayer struct {
-	client *elasticsearch.Client
+type ElasticLayer struct {
+	transport *http.Transport
+	client    *elasticsearch.Client
 }
 
-func NewElsaticLayer(client *elasticsearch.Client) *ElsaticLayer {
-	return &ElsaticLayer{client: client}
+func NewElsaticLayer(client *elasticsearch.Client, transport *http.Transport) *ElasticLayer {
+	return &ElasticLayer{
+		client:    client,
+		transport: transport,
+	}
 }
 
-func NewESClient() *elasticsearch.Client {
+func NewESClient() (*elasticsearch.Client, *http.Transport) {
 	if err := godotenv.Load(); err != nil {
 		log.Println(err)
+	}
+
+	transport := &http.Transport{
+		MaxIdleConns:    10,
+		IdleConnTimeout: 5 * time.Second,
 	}
 
 	addrs := os.Getenv("elastic_addrs")
@@ -31,10 +42,17 @@ func NewESClient() *elasticsearch.Client {
 		Addresses: addrList,
 		Username:  username,
 		Password:  password,
+		Transport: transport,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return client
+	return client, transport
+}
+
+func (el *ElasticLayer) Close() {
+	if el.transport != nil {
+		el.transport.CloseIdleConnections()
+	}
 }

@@ -46,10 +46,10 @@ func Run() {
 	_app.Use(recover.New(), cors.New(), logger.New())
 
 	_db := postgres.NewDB()
-	_esClient := elastic.NewESClient()
+	_esClient, _esTransport := elastic.NewESClient()
 
 	_postgresRepo := postgres.NewPostgresLayer(_db)
-	_elasticRepo := elastic.NewElsaticLayer(_esClient)
+	_elasticRepo := elastic.NewElsaticLayer(_esClient, _esTransport)
 
 	_service := service.NewService(_elasticRepo, _postgresRepo)
 	_handler := handlers.NewHandler(_service)
@@ -68,4 +68,5 @@ func Run() {
 	_ = _app.Shutdown()
 
 	_db.Close()
+	_elasticRepo.Close()
 }

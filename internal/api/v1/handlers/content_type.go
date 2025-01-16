@@ -5,7 +5,7 @@ import (
 	"github.com/sunquan03/cms_api/internal/models"
 )
 
-func (h *Handler) CreateContenttype(c *fiber.Ctx) error {
+func (h *Handler) CreateContentType(c *fiber.Ctx) error {
 	var contentType models.ContentType
 	if err := c.BodyParser(&contentType); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResp{

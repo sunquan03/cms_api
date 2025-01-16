@@ -8,7 +8,7 @@ import (
 	"github.com/sunquan03/cms_api/internal/models"
 )
 
-func (l *ElsaticLayer) CreateContentTypeIndex(contentType *models.ContentType) error {
+func (l *ElasticLayer) CreateContentTypeIndex(contentType *models.ContentType) error {
 	idx_name := fmt.Sprintf("idx_%s", contentType.Name)
 	idx_mapping, err := generateIndexMapping(contentType.Name, contentType.Fields)
 	if err != nil {

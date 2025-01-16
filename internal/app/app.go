@@ -49,7 +49,7 @@ func Run() {
 	_esClient, _esTransport := elastic.NewESClient()
 
 	_postgresRepo := postgres.NewPostgresLayer(_db)
-	_elasticRepo := elastic.NewElsaticLayer(_esClient, _esTransport)
+	_elasticRepo := elastic.NewElasticLayer(_esClient, _esTransport)
 
 	_service := service.NewService(_elasticRepo, _postgresRepo)
 	_handler := handlers.NewHandler(_service)

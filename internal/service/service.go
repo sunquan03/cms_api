@@ -6,10 +6,10 @@ import (
 )
 
 type Service struct {
-	elasticLayer  *elastic.ElsaticLayer
+	elasticLayer  *elastic.ElasticLayer
 	postgresLayer *postgres.PostgresLayer
 }
 
-func NewService(elasticLayer *elastic.ElsaticLayer, postgresLayer *postgres.PostgresLayer) *Service {
+func NewService(elasticLayer *elastic.ElasticLayer, postgresLayer *postgres.PostgresLayer) *Service {
 	return &Service{elasticLayer: elasticLayer, postgresLayer: postgresLayer}
 }

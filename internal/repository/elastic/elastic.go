@@ -15,7 +15,7 @@ type ElasticLayer struct {
 	client    *elasticsearch.Client
 }
 
-func NewElsaticLayer(client *elasticsearch.Client, transport *http.Transport) *ElasticLayer {
+func NewElasticLayer(client *elasticsearch.Client, transport *http.Transport) *ElasticLayer {
 	return &ElasticLayer{
 		client:    client,
 		transport: transport,

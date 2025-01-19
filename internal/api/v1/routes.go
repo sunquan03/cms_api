@@ -14,7 +14,7 @@ func Routes(app *fiber.App, handler *handlers.Handler) {
 
 	content.Post("/", handler.CreateContent)
 	content.Put("/:id", handler.UpdateContent)
-	// TODO: content.Delete("/:id", handler.DeleteContent)
+	content.Delete("/:id", handler.DeleteContent)
 	content.Get("/:id", handler.GetContentById)
 
 }

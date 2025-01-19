@@ -82,11 +82,30 @@ func (l *PostgresLayer) UpdateContent(contentType string, id int64, content map[
 	return nil
 }
 
-// TODO: func (l *PostgresLayer) DeleteContent(contentType string, id int64) error {}
+func (l *PostgresLayer) DeleteContent(contentType string, id int64) error {
+	query := fmt.Sprintf("UPDATE tb_%s SET is_deleted=1 WHERE id = $1", contentType, id)
+	tx, err := l.db.Begin()
+	if err != nil {
+		return errors.Wrap(err, "Begin transaction")
+	}
+
+	_, err = tx.Exec(query, id)
+	if err != nil {
+		tx.Rollback()
+		return errors.Wrap(err, "Exec statement")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "Commit transaction")
+	}
+
+	return nil
+}
 
 func (l *PostgresLayer) GetContentById(contentType string, id int64) (string, error) {
 	var result string
-	query := fmt.Sprintf(" SELECT row_to_json(t) FROM (SELECT * FROM tb_%s WHERE id = $1) t", contentType)
+	query := fmt.Sprintf(" SELECT row_to_json(t) FROM (SELECT * FROM tb_%s WHERE id = $1 and is_deleted=0) t", contentType)
 	err := l.db.QueryRowx(query, id).Scan(&result)
 	if err != nil {
 		return "", errors.Wrap(err, "Query row json")

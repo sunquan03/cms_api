@@ -85,4 +85,27 @@ func (h *Handler) UpdateContent(c *fiber.Ctx) error {
 	})
 }
 
-// TODO: func (h *Handler) DeleteContent(c *fiber.Ctx) error {}
+func (h *Handler) DeleteContent(c *fiber.Ctx) error {
+	contentType := c.Params("content_type")
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResp{
+			Status:  false,
+			Message: "invalid id format",
+		})
+	}
+
+	err = h.service.DeleteContent(contentType, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResp{
+			Status:  false,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.SuccessResp{
+		Status:  true,
+		Message: "success",
+	})
+}

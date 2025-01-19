@@ -28,4 +28,12 @@ func (s *Service) GetContentById(contentType string, id int64) (string, error) {
 	return s.postgresLayer.GetContentById(contentType, id)
 }
 
-// TODO: func(s *Service) DeleteContent(contentType string, id int64) error {}
+func (s *Service) DeleteContent(contentType string, id int64) error {
+	err := s.postgresLayer.DeleteContent(contentType, id)
+	if err != nil {
+		return err
+	}
+
+	s.syncChan <- models.NewContentSync(id, models.DeleteELK, contentType, nil)
+	return nil
+}

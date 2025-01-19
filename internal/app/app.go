@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sunquan03/cms_api/internal/api/v1"
 	"github.com/sunquan03/cms_api/internal/api/v1/handlers"
+	"github.com/sunquan03/cms_api/internal/cache"
 	"github.com/sunquan03/cms_api/internal/models"
 	"github.com/sunquan03/cms_api/internal/repository/elastic"
 	"github.com/sunquan03/cms_api/internal/repository/postgres"
@@ -47,13 +48,16 @@ func Run() {
 
 	_db := postgres.NewDB()
 	_esClient, _esTransport := elastic.NewESClient()
+	_redisClient := cache.NewRedisClient()
 
 	_postgresRepo := postgres.NewPostgresLayer(_db)
 	_elasticRepo := elastic.NewElasticLayer(_esClient, _esTransport)
-
-	_service := service.NewService(_elasticRepo, _postgresRepo)
+	_redisRepo := cache.NewRedisCache(_redisClient)
 
 	syncChan := make(chan *models.ContentSync, 100)
+
+	_service := service.NewService(_elasticRepo, _postgresRepo, _redisRepo, syncChan)
+
 	syncWorkerPool := service.NewSWPool(10, syncChan, _elasticRepo)
 
 	_handler := handlers.NewHandler(_service)

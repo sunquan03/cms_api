@@ -128,3 +128,40 @@ func (l *ElasticLayer) CheckContentIndexExists(ctx context.Context, indexName st
 
 	return nil
 }
+
+func (l *ElasticLayer) SearchContentByQuery(ctx context.Context, contentType, search_query string, fields []string) (map[string]interface{}, error) {
+	indexName := fmt.Sprintf("idx_%s", contentType)
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":  search_query,
+				"fields": fields,
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(query)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := l.client.Search(
+		l.client.Search.WithContext(ctx),
+		l.client.Search.WithIndex(indexName),
+		l.client.Search.WithBody(&buf),
+		l.client.Search.WithPretty())
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var data map[string]interface{}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}

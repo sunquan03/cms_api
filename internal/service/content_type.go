@@ -1,6 +1,9 @@
 package service
 
-import "github.com/sunquan03/cms_api/internal/models"
+import (
+	"context"
+	"github.com/sunquan03/cms_api/internal/models"
+)
 
 func (s *Service) CreateContentType(contentType *models.ContentType) error {
 	err := s.postgresLayer.GenerateContentTypeTable(contentType)
@@ -11,6 +14,15 @@ func (s *Service) CreateContentType(contentType *models.ContentType) error {
 	err = s.elasticLayer.CreateContentTypeIndex(contentType)
 	if err != nil {
 		return err
+	}
+
+	for _, field := range contentType.Fields {
+		if field.Searchable {
+			err = s.redisLayer.SetSearchableField(context.TODO(), contentType.Name, field.Name)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

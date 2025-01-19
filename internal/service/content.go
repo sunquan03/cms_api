@@ -1,6 +1,9 @@
 package service
 
-import "github.com/sunquan03/cms_api/internal/models"
+import (
+	"context"
+	"github.com/sunquan03/cms_api/internal/models"
+)
 
 func (s *Service) CreateContent(contentType string, content map[string]interface{}) (int64, error) {
 	id, err := s.postgresLayer.CreateContent(contentType, content)
@@ -36,4 +39,13 @@ func (s *Service) DeleteContent(contentType string, id int64) error {
 
 	s.syncChan <- models.NewContentSync(id, models.DeleteELK, contentType, nil)
 	return nil
+}
+
+func (s *Service) SearchContentByQuery(ctx context.Context, contentType string, searchQuery string) (map[string]interface{}, error) {
+	fields, err := s.redisLayer.GetSearchableFieldsList(ctx, contentType)
+	if err != nil {
+		return nil, err
+	}
+	
+	return s.elasticLayer.SearchContentByQuery(ctx, contentType, searchQuery, fields)
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sunquan03/cms_api/internal/models"
 	"strconv"
@@ -108,4 +109,25 @@ func (h *Handler) DeleteContent(c *fiber.Ctx) error {
 		Status:  true,
 		Message: "success",
 	})
+}
+
+func (h *Handler) SearchContentByQuery(c *fiber.Ctx) error {
+	contentType := c.Params("content_type")
+	searchQuery := c.Query("query")
+	if len(searchQuery) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResp{
+			Status:  false,
+			Message: "empty search query",
+		})
+	}
+
+	data, err := h.service.SearchContentByQuery(context.TODO(), contentType, searchQuery)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResp{
+			Status:  false,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(data)
 }

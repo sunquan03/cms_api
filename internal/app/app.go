@@ -52,9 +52,15 @@ func Run() {
 	_elasticRepo := elastic.NewElasticLayer(_esClient, _esTransport)
 
 	_service := service.NewService(_elasticRepo, _postgresRepo)
+
+	syncChan := make(chan *models.ContentSync, 100)
+	syncWorkerPool := service.NewSWPool(10, syncChan, _elasticRepo)
+
 	_handler := handlers.NewHandler(_service)
 
 	v1.Routes(_app, _handler)
+
+	go syncWorkerPool.Run()
 
 	go func() {
 		if err := _app.Listen(fmt.Sprintf("%s:%s", _host, _port)); err != nil {
@@ -67,6 +73,8 @@ func Run() {
 	_ = <-c
 	_ = _app.Shutdown()
 
+	close(syncChan)
 	_db.Close()
 	_elasticRepo.Close()
+
 }

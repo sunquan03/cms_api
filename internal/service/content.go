@@ -1,11 +1,27 @@
 package service
 
+import "github.com/sunquan03/cms_api/internal/models"
+
 func (s *Service) CreateContent(contentType string, content map[string]interface{}) (int64, error) {
-	return s.postgresLayer.CreateContent(contentType, content)
+	id, err := s.postgresLayer.CreateContent(contentType, content)
+	if err != nil {
+		return 0, err
+	}
+
+	s.syncChan <- models.NewContentSync(id, models.CreateELK, contentType, content)
+
+	return id, nil
 }
 
 func (s *Service) UpdateContent(contentType string, id int64, content map[string]interface{}) error {
-	return s.postgresLayer.UpdateContent(contentType, id, content)
+	err := s.postgresLayer.UpdateContent(contentType, id, content)
+	if err != nil {
+		return err
+	}
+
+	s.syncChan <- models.NewContentSync(id, models.UpdateELK, contentType, content)
+
+	return nil
 }
 
 func (s *Service) GetContentById(contentType string, id int64) (string, error) {

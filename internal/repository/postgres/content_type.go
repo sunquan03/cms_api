@@ -20,7 +20,7 @@ func (l *PostgresLayer) GenerateContentTypeTable(contentType *models.ContentType
 		if i != last_idx {
 			builder.WriteString(",\n")
 		} else {
-			builder.WriteString(");")
+			builder.WriteString("is_deleted int default 0\n);")
 		}
 	}
 
